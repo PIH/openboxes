@@ -8,6 +8,9 @@
     <title>
         <warehouse:message code="stockMovement.label"/>
     </title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+
 </head>
 <body>
 
@@ -447,7 +450,21 @@
                             <warehouse:message code="documents.label" default="Documents"/>
                         </a>
                     </li>
+                    <li>
+                        <a href="${request.contextPath}/stockMovement/events/${stockMovement?.id}">
+                            <warehouse:message code="events.label" default="Events"/>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#tracking"><g:message code="tracking.label" default="Tracking"/></a>
+%{--                        <a href="${request.contextPath}/stockMovement/tracking/${stockMovement?.id}">--}%
+%{--                            <warehouse:message code="tracking.label" default="Tracking"/>--}%
+%{--                        </a>--}%
+                    </li>
                 </ul>
+                <div id="tracking" class="ui-tabs-hide">
+                    <g:render template="tracking"/>
+                </div>
             </div>
         </div>
     </div>
@@ -455,12 +472,41 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $(".tabs").tabs({
-            cookie : {
-                expires : 1
-            },
-            selected: ${stockMovement?.shipment?.currentStatus >= ShipmentStatusCode.SHIPPED} ? 1 : 0
+      $(".tabs")
+      .tabs({
+        cookie: {
+          expires: 1
+        },
+      });
+      mapboxgl.accessToken = "${grailsApplication.config.openboxes.mapbox.accessToken}"
+      var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: ${grailsApplication.config.openboxes.mapbox.center},
+        zoom: ${grailsApplication.config.openboxes.mapbox.zoom}
+      });
+
+      map.on("load", function () {
+
+        map.addSource('route', {
+          type: 'geojson',
+          data: '${request.contextPath}/api/gps/route/${stockMovement?.id}'
         });
+
+        map.addLayer({
+          'id': 'route',
+          'type': 'line',
+          'source': 'route',
+          'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          'paint': {
+            'line-color': '#888',
+            'line-width': 8
+          }
+        });
+      })
     });
 </script>
 
