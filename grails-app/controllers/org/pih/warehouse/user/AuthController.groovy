@@ -9,7 +9,9 @@
  **/
 package org.pih.warehouse.user
 
+import com.nimbusds.jose.JWSObject
 import grails.validation.ValidationException
+import org.apache.http.client.methods.HttpGet
 import org.pih.warehouse.auth.UserSignupEvent
 import org.pih.warehouse.core.MailService
 import org.pih.warehouse.core.User
@@ -22,6 +24,7 @@ class AuthController {
     def grailsApplication
     def recaptchaService
     def ravenClient
+    def identifierService
 
     static allowedMethods = [login: "GET", doLogin: "POST", logout: "GET"]
 
@@ -51,7 +54,6 @@ class AuthController {
             flash.message = "You have already logged in."
             redirect(controller: "dashboard", action: "index")
         }
-
     }
 
 
@@ -134,7 +136,12 @@ class AuthController {
             redirect(controller: "dashboard", action: "index")
         } else {
             flash.message = "${warehouse.message(code: 'auth.logoutSuccess.message')}"
+            def providerId = session.oauthProvider
             session.invalidate()
+            if (providerId) {
+                redirect(controller: "openIdConnect", action: "logout", id: providerId)
+                return
+            }
             redirect(action: 'login')
         }
     }

@@ -843,6 +843,41 @@ openboxes.ajaxRequest.timeout = 120000
 //google.analytics.enabled = false
 //google.analytics.webPropertyID = "UA-xxxxxx-x"
 
+// OAuth Client credentials
+openboxes {
+    oauth2Providers {
+        example {
+            enabled = false
+            title = "Example"
+            clientId = ""
+            clientSecret = ""
+            redirectUrl = ""
+            domainHint = ""
+            openIdConfigurationUrl = "https://example.com/.well-known/openid-configuration"
+            openIdConfiguration {
+                authorization_endpoint = ""
+                token_endpoint = ""
+                end_session_endpoint = ""
+            }
+        }
+        google {
+            enabled = false
+            title = "Google"
+            clientId = ""
+            clientSecret = ""
+            redirectUrl = ""
+            domainHint = ""
+            openIdConfigurationUrl = "https://accounts.google.com/.well-known/openid-configuration"
+            openIdConfiguration {
+                authorization_endpoint = ""
+                token_endpoint = ""
+                end_session_endpoint = ""
+            }
+        }
+    }
+}
+
+
 // Fullstory integration
 openboxes.fullstory.enabled = false
 openboxes.fullstory.debug = false

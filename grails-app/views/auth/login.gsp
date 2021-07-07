@@ -1,87 +1,91 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<meta name="layout" content="custom" />
+	<meta name="layout" content="bootstrap" />
 	<title><warehouse:message code="auth.title"/></title>
-	<!-- Specify content to overload like global navigation links, page titles, etc. -->
 	<script src="${createLinkTo(dir:'js/', file:'detect_timezone.js')}" type="text/javascript" ></script>
-    <script src="${createLinkTo(dir:'js/', file:'requisition.js')}" type="text/javascript" ></script>
-	<style>
-		input, button { width: 100%; font-size: 2em; text-align: center; padding: 10px; }
-	</style>
+    <link rel="stylesheet" href="${createLinkTo(dir:'css/', file:'login.css')}">
 </head>
-<body>
-	<div class="body">
-		<g:form controller="auth" action="handleLogin" method="post">	
-		
-			<g:hiddenField name="targetUri" value="${params?.targetUri}" />
-			<g:hiddenField id="browserTimezone" name="browserTimezone" />
-			  
-		    <div id="loginContainer" class="dialog">
-				<div id="loginForm">
-					<g:if test="${flash.message}">
-					    <div class="message">${flash.message}</div>
-					</g:if>	
-				
-					<g:hasErrors bean="${userInstance}">
-					   <div class="errors">
-					       <g:renderErrors bean="${userInstance}" as="list" />
-					   </div>
-					</g:hasErrors>
-								
-					<div id="loginBox" class="box">
-                        <h2>
-                            <img src="${createLinkTo(dir:'images/icons/silk',file:'lock.png')}" class="middle"/>
-                            <warehouse:message code="default.login.label" default="Login"/>
-                        </h2>
+<body class="text-center">
 
-						<table>
-							<tbody>
-								<tr>
-									<td class="left middle ${hasErrors(bean: userInstance, field: 'username', 'errors')}">
-										<g:textField class="text" id="username" name="username" value="${userInstance?.username?:params.username}" />
-									</td>
-								</tr>
-								<tr>
-									<td class="left middle ${hasErrors(bean: userInstance, field: 'password', 'errors')}">
-										<g:passwordField class="text" id="password" name="password" value="${userInstance?.password?:params.password}" />
-									</td>
-								</tr>
-								<tr>
-									<td class="middle center">
-										<button type="submit" class="button big" id="loginButton">
-											<g:message code="auth.login.label"/>
-										</button> 															
-									</td>
-								</tr>
+<div class="vertical-center">
 
-                                <tr class="">
-                                    <td class="middle left" colspan="2">
-                                        <warehouse:message code="auth.newuser.text"/>
-                                        <g:link class="list" controller="auth" action="signup"><warehouse:message code="auth.signup.label" default="Signup"/></g:link>
-                                    </td>
-                                </tr>
+    <div class="container">
+        <div class="login-form">
 
-                            </tbody>
-						</table>
-					</div>
-					
-				</div>
-			</div>
-		</g:form>
-	</div>
-	
-	<script type="text/javascript"> 	
+            <g:if test="${flash.message}">
+                <div class="alert alert-primary">${flash.message}</div>
+            </g:if>
+
+            <g:hasErrors bean="${userInstance}">
+               <div class="errors">
+                   <g:renderErrors bean="${userInstance}" as="list" />
+               </div>
+            </g:hasErrors>
+
+
+            <g:form controller="auth" action="handleLogin" method="post">
+                <g:hiddenField name="targetUri" value="${params?.targetUri}" />
+                <g:hiddenField id="browserTimezone" name="browserTimezone" />
+
+                <h2 class="text-center">
+                    <i class="fa fa-arrow-circle-o-right"></i>
+                    <warehouse:message code="default.login.label" default="Login"/>
+                </h2>
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <span class="fa fa-user"></span>
+                            </span>
+                        </div>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Email or username" required="required">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                        </div>
+                        <input type="password" class="form-control" name="password" placeholder="Password" required="required">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success btn-block login-btn"><g:message code="auth.login.label"/></button>
+                </div>
+                <g:set var="providers" value="${grailsApplication.config.openboxes.oauth2Providers.findAll { Boolean.valueOf(it.value.enabled) }}"></g:set>
+                <g:if test="${providers.size()}">
+                    <div class="or-seperator"><i>or</i></div>
+                    <div class="text-center social-btn">
+                        <g:each var="provider" in="${providers}">
+                            <g:set var="providerConfig" value="${provider.value}"/>
+                            <g:if test="${Boolean.valueOf(providerConfig.enabled)}">
+                                <g:link controller="openIdConnect" action="authenticate" id="${provider.key}" class="${providerConfig.btnClass}">
+                                    <i class="${providerConfig?.iconClass}"></i>
+                                    Sign in with <b>${providerConfig?.title?:provider.key}</b>
+                                </g:link>
+                            </g:if>
+                        </g:each>
+                    </div>
+                </g:if>
+            </g:form>
+            <div class="hint-text">
+                <warehouse:message code="auth.newuser.text"/>
+                <g:link controller="auth" action="signup" class="text-success">
+                    <warehouse:message code="auth.signup.label" default="Signup"/>
+                </g:link>
+            </div>
+        </div>
+    </div>
+</div>
+	<script type="text/javascript">
 		$(document).ready(function() {
-
 			var timezone = jzTimezoneDetector.determine_timezone().timezone; // Now you have an instance of the TimeZone object.
 			$("#browserTimezone").val(timezone.olson_tz); // Set the user timezone offset as a hidden input
-            $("#username").watermark("${warehouse.message(code:'login.username.label')}");
-		    $("#password").watermark("${warehouse.message(code:'login.password.label')}");
-			$("#username").focus();
-
-            openboxes.expireFromLocal();
 		});
-	</script>	
+	</script>
 </body>
 </html>
